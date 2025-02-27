@@ -26,7 +26,6 @@ class _SplashScreenUIState extends State<SplashScreenUI> {
 
   @override
   Widget build(BuildContext context) {
-    final double mediaQueryHeight = MediaQuery.of(context).size.height;
     final double mediaQueryWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.deepOrange,

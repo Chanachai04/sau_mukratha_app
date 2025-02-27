@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sau_mukratha_app/views/show_bill_ui.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 
 class CalBillUI extends StatefulWidget {
   const CalBillUI({super.key});
@@ -37,6 +38,7 @@ class _CalBillUIState extends State<CalBillUI> {
 
   //? ตัวแปรเก็บส่วดลดจากประภทสมาชิก
   double discount = 0;
+  double showDiscount = 0.0;
   //? เมธอดเปิดกล้อง
   Future<void> openCamera() async {
     final picker = await ImagePicker().pickImage(
@@ -52,6 +54,17 @@ class _CalBillUIState extends State<CalBillUI> {
       () {
         imgFile = File(picker.path);
       },
+    );
+  }
+
+  //? เมธอด dialog
+  Future<void> showValidationDialog(
+      BuildContext context, String message) async {
+    await showOkAlertDialog(
+      context: context,
+      title: "แจ้งเตือน",
+      message: message,
+      okLabel: "ตกลง",
     );
   }
 
@@ -98,7 +111,7 @@ class _CalBillUIState extends State<CalBillUI> {
                         onChanged: (vlaueParam) {
                           setState(() {
                             adultCheck = vlaueParam!;
-                            if (vlaueParam! == false) {
+                            if (vlaueParam == false) {
                               adultCtrl.text = '0';
                             }
                           });
@@ -121,7 +134,7 @@ class _CalBillUIState extends State<CalBillUI> {
                         onChanged: (vlaueParam) {
                           setState(() {
                             childCheck = vlaueParam!;
-                            if (vlaueParam! == false) {
+                            if (vlaueParam == false) {
                               childCtrl.text = '0';
                             }
                           });
@@ -217,7 +230,7 @@ class _CalBillUIState extends State<CalBillUI> {
                 ),
                 //? dropdown ประเภทสมาชิก
                 DropdownButton(
-                  value: discount,
+                  value: showDiscount,
                   isExpanded: true,
                   items: memberType
                       .map(
@@ -233,17 +246,21 @@ class _CalBillUIState extends State<CalBillUI> {
                       )
                       .toList(),
                   onChanged: (valueParam) {
-                    switch (valueParam) {
-                      case 0:
-                        discount = 0;
-                        break;
-                      case 1:
-                        discount = 0.05;
-                        break;
-                      case 2:
-                        discount = 0.2;
-                        break;
-                    }
+                    int index = valueParam!.toInt();
+                    setState(() {
+                      showDiscount = valueParam;
+                      switch (index) {
+                        case 0.0:
+                          discount = 0;
+                          break;
+                        case 1.0:
+                          discount = 0.05;
+                          break;
+                        case 2.0:
+                          discount = 0.2;
+                          break;
+                      }
+                    });
                   },
                 ),
                 //? button ปุ่ม
@@ -255,21 +272,21 @@ class _CalBillUIState extends State<CalBillUI> {
                     Expanded(
                       flex: 3,
                       child: ElevatedButton.icon(
-                        onPressed: () {
+                        onPressed: () async {
                           //? validate ui
                           if (imgFile == null) {
-                            //? แจ้งเตือน
-                            print("รูปไม่มี");
-                          } else if (adultCheck == true &&
-                                  adultCtrl.text == '0' ||
-                              adultCtrl.text.isEmpty) {
-                            //? แจ้งเตือน
-                            print("check adult");
-                          } else if (childCheck == true &&
-                                  childCtrl.text == '0' ||
-                              childCtrl.text.isEmpty) {
-                            //? แจ้งเตือน
-                            print("check child");
+                            await showValidationDialog(
+                                context, "กรุณาถ่ายรูปก่อน");
+                          } else if (adultCheck == false &&
+                              (adultCtrl.text == '0' ||
+                                  adultCtrl.text.isEmpty)) {
+                            await showValidationDialog(
+                                context, "กรุณากรอกจำนวนผู้ใหญ่ให้ถูกต้อง");
+                          } else if (childCheck == false &&
+                              (childCtrl.text == '0' ||
+                                  childCtrl.text.isEmpty)) {
+                            await showValidationDialog(
+                                context, "กรุณากรอกจำนวนเด็กให้ถูกต้อง");
                           } else {
                             //? พร้อมคำนวณ
                             int adult = int.parse(adultCtrl.text);
@@ -324,8 +341,13 @@ class _CalBillUIState extends State<CalBillUI> {
                           setState(() {
                             adultCheck = false;
                             childCheck = false;
-                            childCtrl.text = '0';
+                            waterCheck = 1;
+                            discount = 0;
+                            imgFile = null;
                             adultCtrl.text = '0';
+                            childCtrl.text = '0';
+                            cokeCtrl.text = '0';
+                            pureCtrl.text = '0';
                           });
                         },
                         icon: Icon(

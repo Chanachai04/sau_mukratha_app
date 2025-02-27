@@ -13,7 +13,8 @@ class HomeUI extends StatefulWidget {
 }
 
 class _HomeUIState extends State<HomeUI> {
-  NotchBottomBarController _pageController = NotchBottomBarController(index: 1);
+  final NotchBottomBarController _pageController =
+      NotchBottomBarController(index: 1);
 
   List<Widget> viewInBody = [
     CalBillUI(),
